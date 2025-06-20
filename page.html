@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Consulta de Supabase</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background-color: #f2f2f2; }
+        button { 
+            padding: 10px 15px; 
+            margin: 5px;
+            background: #3cb371; 
+            color: white; 
+            border: none; 
+            cursor: pointer;
+        }
+        button:hover { background: #2e8b57; }
+    </style>
+</head>
+<body>
+    <h1>Consulta de Datos</h1>
+    
+    <div>
+        <button id="btnEstudiantes">Estudiantes</button>
+        <button id="btnCursos">Cursos</button>
+        <button id="btnInscripciones">Inscripciones</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        
+        const SUPABASE_URL = 'https://esijnroqdxnzvwdwraht.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzaWpucm9xZHhuenZ3ZHdyYWh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5NDE5ODksImV4cCI6MjA2NTUxNzk4OX0.Uc9WJ2yiHWuE27vSXGKmqZAtpK_59KdpC-IAnAcs2gk';
+        
+        
+        window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        
+        async function fetchData(table) {
+            try {
+                console.log(Cargando ${table}...);
+                const { data, error } = await window.supabase
+                    .from(table)
+                    .select('*');
+                
+                if (error) throw error;
+                
+                renderTable(table, data);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('results').innerHTML = 
+                    <p style="color: red;">Error al cargar ${table}: ${error.message}</p>;
+            }
+        }
+        
+        function renderTable(table, data) {
+            let html = <h2>${table}</h2>;
+            
+            if (data && data.length > 0) {
+                html += '<table><tr>';
+                
+                Object.keys(data[0]).forEach(key => {
+                    html += <th>${key}</th>;
+                });
+                html += '</tr>';
+                
+                
+                data.forEach(row => {
+                    html += '<tr>';
+                    Object.values(row).forEach(val => {
+                        html += <td>${val ?? 'NULL'}</td>;
+                    });
+                    html += '</tr>';
+                });
+                html += '</table>';
+            } else {
+                html += '<p>No hay datos</p>';
+            }
+            
+            document.getElementById('results').innerHTML = html;
+        }
+        
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('btnEstudiantes').addEventListener('click', () => fetchData('estudiantes'));
+            document.getElementById('btnCursos').addEventListener('click', () => fetchData('cursos'));
+            document.getElementById('btnInscripciones').addEventListener('click', () => fetchData('inscripciones'));
+        });
+    </script>
+</body>
+</html>
